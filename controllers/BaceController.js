@@ -4,17 +4,17 @@ const BaceBook = require('../models/BaceSchema');
 // ...existing code...
 router.post('/register', async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name, password } = req.body;
         const existingBace = await BaceBook.findOne({ name });
         if (existingBace) {
             return res.status(400).json({ message: 'Bace with this name already exists' });
         }
-        const bace = new BaceBook({ name, small_books: 0, big_books: 0, mahabig_books: 0, total_books: 0 });
+        const bace = new BaceBook({ name, password, small_books: 0, big_books: 0, mahabig_books: 0, total_books: 0 });
         await bace.save();
-        res.status(201).json({ message: 'Bace registered successfully', bace });
+        res.status(201).json({ message: 'Bace registered successfully', bace, success:'true' });
     } catch (error) {
         console.error('Error registering bace:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error', success:'false' });
     }
 });
 
@@ -38,10 +38,10 @@ router.post('/update-books', async (req, res) => {
     }
 });
 
-router.get('/get-details/:name', async (req, res) => {
+router.get('/get-details/:id', async (req, res) => {
     try {
-        const { name } = req.params;
-        const baceBook = await BaceBook.findOne({ name });
+        const { id } = req.params;
+        const baceBook = await BaceBook.findById(id);
         if (!baceBook) {
             return res.status(404).json({ message: 'No book record found' });
         }
@@ -51,6 +51,8 @@ router.get('/get-details/:name', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
 
 router.get('/all', async (req, res) => {
     try {

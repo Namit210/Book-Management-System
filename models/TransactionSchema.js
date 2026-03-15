@@ -7,10 +7,6 @@ const TransactionSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        userId: {
-            type: String,
-            required: true
-        },
         small_books: {
             type: Number,
         },
@@ -33,6 +29,10 @@ const TransactionSchema = new mongoose.Schema(
         },
         transaction_id: {
             type: String,
+            unique: true,
+            default: function() {
+                return 'admin-' + new mongoose.Types.ObjectId().toString();
+            }
         },
         timestamp:{
             type: Date,

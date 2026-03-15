@@ -9,6 +9,9 @@ const BaceSchema = new mongoose.Schema({
         unique: true
     },
     // userId removed
+    password:{
+        type: String,
+    },
     small_books: {
         type: Number,
     },

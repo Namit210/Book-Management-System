@@ -27,7 +27,7 @@ router.delete('/delete', async (req, res) => {
 });
 
 router.post('/status', async (req, res)=>{
-    const { id, paid, pending } = req.body;
+    const { id, paid, pending, transaction_id } = req.body;
 
     try{
         const transaction = await Transaction.findById(id);
@@ -35,12 +35,13 @@ router.post('/status', async (req, res)=>{
             return res.status(404).json({ message: 'Transaction not found' });
         }
 
-        if(transaction.amount.paid + transaction.amount.pending !=  + paid + pending){
-            return res.status(400).json({ message: `Total amount should be , ${transaction.amount.paid + transaction.amount.pending}` });
+        if(transaction.amount.paid + transaction.amount.pending != paid + pending){
+            return res.status(400).json({ message: `Total amount should be ${transaction.amount.paid + transaction.amount.pending}, you have currently paid:${paid} and pending:${pending}` });
         }
 
         transaction.amount.paid = paid;
         transaction.amount.pending = pending;
+        transaction.transaction_id = transaction_id;
 
         await transaction.save();
         res.status(200).json({ message: 'Transaction status updated successfully', transaction });
