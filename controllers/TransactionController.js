@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const Transaction = require('../models/TransactionSchema'); 
+const { verifyToken, authorize } = require('../middleware/authMiddleware');
 
-router.get('/all', async (req, res) => {
+router.get('/all',verifyToken, authorize(['admin','bace'])  ,async (req, res) => {
     try {
+        if(req.user.role === 'admin'){
         const transactions = await Transaction.find({}).sort({ timestamp: -1 });
         res.status(200).json(transactions);
+        }
+        else{
+            const transactions = await Transaction.find({ user: req.user._id }).sort({ timestamp: -1 });
+            res.status(200).json(transactions);
+        }
     } catch (error) {
         console.error('Error fetching transactions:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -35,7 +42,8 @@ router.post('/status', async (req, res)=>{
             return res.status(404).json({ message: 'Transaction not found' });
         }
 
-        if(transaction.amount.paid + transaction.amount.pending != paid + pending){
+
+        if(transaction.amount.paid + transaction.amount.pending != paid + pending && not (transaction.amount.paid == 0 && transaction.amount.pending == 0)){
             return res.status(400).json({ message: `Total amount should be ${transaction.amount.paid + transaction.amount.pending}, you have currently paid:${paid} and pending:${pending}` });
         }
 

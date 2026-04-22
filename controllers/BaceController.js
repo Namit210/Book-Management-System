@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const BaceBook = require('../models/BaceSchema');
+const Transaction = require('../models/TransactionSchema');
+const { verifyToken, authorize } = require('../middleware/authMiddleware');
+const mongoose = require('mongoose');
+
 // ...existing code...
-router.post('/register', async (req, res) => {
+router.post('/register',verifyToken, authorize(['admin','bace']) ,async (req, res) => {
     try {
         const { name, password } = req.body;
         const existingBace = await BaceBook.findOne({ name });
@@ -18,7 +22,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/update-books', async (req, res) => {
+router.post('/update-books',verifyToken, authorize(['admin','bace']) , async (req, res) => {
     try {
         const { name, small_books, big_books, mahabig_books } = req.body;
         const total_books = small_books + big_books + mahabig_books;
@@ -52,9 +56,23 @@ router.get('/get-details/:id', async (req, res) => {
     }
 });
 
+router.get('/getbyname/:name', async (req, res) => {
+    try {
+        const { name } = req.params;
+        const baceBook = await BaceBook.findOne({ name });
+        if (!baceBook) {
+            return res.status(404).json({ message: 'No book record found' });
+        }
+        res.status(200).json(baceBook);
+    } catch (error) {
+        console.error('Error fetching book:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 
-router.get('/all', async (req, res) => {
+
+router.get('/all',verifyToken, authorize(['admin','bace']) , async (req, res) => {
     try {
         const baceBooks = await BaceBook.find({}).sort({ createdAt: -1 });
         if (baceBooks.length === 0) {
@@ -67,7 +85,7 @@ router.get('/all', async (req, res) => {
     }
 });
 
-router.delete('/delete', async (req, res) => {
+router.delete('/delete',verifyToken, authorize(['admin','bace']) , async (req, res) => {
     try {
         const { name } = req.body;
         const deletedBaceBook = await BaceBook.findOneAndDelete({ name });
@@ -77,6 +95,30 @@ router.delete('/delete', async (req, res) => {
         res.status(200).json({ message: 'Bace book record deleted successfully' });
     } catch (error) {
         console.error('Error deleting bace book record:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/request',verifyToken, authorize(['bace']) , async (req, res) => {
+    try {
+        const { name, small_books, big_books, mahabig_books, desc } = req.body;
+        const total_books = small_books + big_books + mahabig_books;
+        new Transaction({
+            bace: name,
+            small_books,
+            big_books,
+            mahabig_books,
+            total_books,
+            desc,
+            amount: {
+                paid: 0,
+                pending: 0
+            },
+            transaction_id: 'request-' + new mongoose.Types.ObjectId().toString(),
+        }).save();
+        res.status(200).json({ message: 'Book request submitted successfully', success: 'true' });
+    } catch (error) {
+        console.error('Error requesting books:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });

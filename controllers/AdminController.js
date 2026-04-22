@@ -3,9 +3,10 @@ const router = express.Router();
 const AdminBook = require('../models/AdminSchema');
 const Transaction = require('../models/TransactionSchema');
 const BaceBook = require('../models/BaceSchema');
+const { verifyToken,authorize } = require('../middleware/authMiddleware');
 
 
-router.post('/update-books', async (req, res) => {
+router.post('/update-books',verifyToken, authorize(['admin']) ,async (req, res) => {
     try {
         const { small_books, big_books, mahabig_books } = req.body;
 
@@ -30,7 +31,7 @@ router.post('/update-books', async (req, res) => {
     }
 }); 
 
-router.get('/get-details', async (req, res) => {
+router.get('/get-details',async (req, res) => {
     try {
         const adminBooks = await AdminBook.find().sort({ createdAt: -1 });
         if (adminBooks.length === 0) {
@@ -43,9 +44,9 @@ router.get('/get-details', async (req, res) => {
 });
 
 
-router.post('/transfer', async (req, res) => {
+router.post('/transfer',verifyToken, authorize(['admin']) ,async (req, res) => {
     try {
-        const {name, small_books, big_books, mahabig_books, amount } = req.body;
+        const {name, small_books, big_books, mahabig_books, amount, desc } = req.body;
 
 
         const small = Number(small_books);
@@ -78,7 +79,7 @@ router.post('/transfer', async (req, res) => {
       total_books : -total_books
     }
   },
-  { new: true, upsert: true }
+  { returnDocument:'after', upsert: true }
 );
 
         // Create a new AdminBook document
@@ -88,6 +89,7 @@ router.post('/transfer', async (req, res) => {
             big_books,
             mahabig_books,
             total_books,
+            desc,
             amount: {
                 paid: 0,
                 pending: amount
@@ -97,7 +99,7 @@ router.post('/transfer', async (req, res) => {
         // Save the document to the database
         await transaction.save();
 
-        res.status(200).json({ message: 'Books transferred successfully', transaction });
+        res.status(200).json({ message: 'Books transferred successfully', transaction, success: true });
     } catch (error) {
         console.error('Error transferring books:', error);
         res.status(500).json({ message: 'Internal server error' });
