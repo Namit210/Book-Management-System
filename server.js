@@ -1,4 +1,4 @@
-const port = 4000
+const port = process.env.PORT || 4000
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
@@ -8,7 +8,11 @@ const baceRoutes = require('./controllers/BaceController')
 const userRoutes = require('./controllers/UserController')
 const cors = require('cors')
 
-app.use(cors())
+app.use(cors(
+  {
+    origin: ['http://localhost:5173', 'https://bookdistribution.vercel.app'],
+  }
+))
 
 const BaceBook = require('./models/BaceSchema')
 require('dotenv').config()
@@ -31,7 +35,7 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Server is running on port ${port}`)
 })
 
 app.use(express.json())
