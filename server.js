@@ -10,7 +10,7 @@ const cors = require('cors')
 
 app.use(cors(
   {
-    origin: ['http://localhost:5173', 'https://bookdistribution.vercel.app'],
+    origin: ['http://localhost:5173', 'https://library-ledger.vercel.app'],
   }
 ))
 
