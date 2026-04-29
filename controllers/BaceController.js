@@ -1,21 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const BaceBook = require('../models/BaceSchema');
+const StoreBook = require('../models/StoreSchema');
 const Transaction = require('../models/TransactionSchema');
 const { verifyToken, authorize } = require('../middleware/authMiddleware');
 const mongoose = require('mongoose');
 
-// ...existing code...
-router.post('/register',verifyToken, authorize(['admin','bace']) ,async (req, res) => {
+router.post('/register',verifyToken, authorize(['admin','store']) ,async (req, res) => {
     try {
         const { name, password } = req.body;
-        const existingBace = await BaceBook.findOne({ name });
-        if (existingBace) {
-            return res.status(400).json({ message: 'Bace with this name already exists' });
+        const existingStore = await StoreBook.findOne({ name });
+        if (existingStore) {
+            return res.status(400).json({ message: 'Store with this name already exists' });
         }
-        const bace = new BaceBook({ name, password, small_books: 0, big_books: 0, mahabig_books: 0, total_books: 0 });
+        const store = new StoreBook({ name, password, small_books: 0, big_books: 0, medium_books: 0, total_books: 0 });
         await bace.save();
-        res.status(201).json({ message: 'Bace registered successfully', bace, success:'true' });
+        res.status(201).json({ message: 'Store registered successfully', bace, success:'true' });
     } catch (error) {
         console.error('Error registering bace:', error);
         res.status(500).json({ message: 'Internal server error', success:'false' });
@@ -24,18 +23,18 @@ router.post('/register',verifyToken, authorize(['admin','bace']) ,async (req, re
 
 router.post('/update-books',verifyToken, authorize(['admin','bace']) , async (req, res) => {
     try {
-        const { name, small_books, big_books, mahabig_books } = req.body;
-        const total_books = small_books + big_books + mahabig_books;
-        const baceBook = await BaceBook.findOne({ name });
-        if (!baceBook) {
+        const { name, small_books, big_books, medium_books } = req.body;
+        const total_books = small_books + big_books + medium_books;
+        const storeBook = await StoreBook.findOne({ name });
+        if (!storeBook) {
             return res.status(404).json({ message: 'Bace book not found' });
         }
-        baceBook.small_books = small_books;
-        baceBook.big_books = big_books;
-        baceBook.mahabig_books = mahabig_books;
-        baceBook.total_books = total_books;
-        await baceBook.save();
-        res.status(200).json({ message: 'Books updated successfully', baceBook });
+        storeBook.small_books = small_books;
+        storeBook.big_books = big_books;
+        storeBook.medium_books = mahabig_books;
+        storeBook.total_books = total_books;
+        await storeBook.save();
+        res.status(200).json({ message: 'Books updated successfully', storeBook });
     } catch (error) {
         console.error('Error updating books:', error);
         res.status(500).json({ message: 'Internal server error' });

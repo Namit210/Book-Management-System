@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-//Bace_Name, Small books, Mahabig Books, Big Books, total_books, Amount Paid/Pending, transaction_id object
+//Store_Name, Small books, Mahabig Books, Big Books, total_books, Amount Paid/Pending, transaction_id object
 const TransactionSchema = new mongoose.Schema(
     {
-        bace : {
+        store : {
             type: String,
             required: true,
         },
@@ -13,7 +13,7 @@ const TransactionSchema = new mongoose.Schema(
         big_books: {
             type: Number,
         },
-        mahabig_books: {
+        medium_books: {
             type: Number,
         },
         total_books: {

@@ -1,7 +1,7 @@
 const {body, validationResult} = require('express-validator');
 const User = require('../models/UserSchema');
 const router = require('express').Router();
-// ...existing code...
+
 router.post('/register', 
     [
         body('name').notEmpty().withMessage('Name is required'),

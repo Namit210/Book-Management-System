@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { registerSchema, loginSchema } = require('../models/auth-validator');
 const User = require('../models/UserSchema');
-const BaceBook = require('../models/BaceSchema');
+const StoreBook = require('../models/StoreSchema');
 const bcrypt = require('bcrypt');
 const validate = require('../middleware/validate-middleware');
 
@@ -28,14 +28,14 @@ router.post('/register', validate(registerSchema) ,async (req, res) => {
         const user = new User({ name, password: hashedPassword, role });
         await user.save();
 
-        if(role === 'bace'){
-            const existingBace = await BaceBook.findOne({ name });
-                if (existingBace) {
-                    return res.status(400).json({ message: 'Bace with this name already exists' });
+        if(role === 'store'){
+            const existingStore = await StoreBook.findOne({ name });
+                if (existingStore) {
+                    return res.status(400).json({ message: 'Store with this name already exists' });
                 }
-                const bace = new BaceBook({ name, password, small_books: 0, big_books: 0, mahabig_books: 0, total_books: 0 });
+                const store = new StoreBook({ name, password, small_books: 0, big_books: 0, medium_books: 0, total_books: 0 });
 
-                await bace.save();
+                await store.save();
         }
 
         res.status(201).json({ message: 'User registered successfully', user: { id: user._id, name: user.name, role: user.role }, token: await user.generateToken(), success: true });

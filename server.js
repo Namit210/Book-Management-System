@@ -4,7 +4,7 @@ const app = express()
 const mongoose = require('mongoose')
 const adminRoutes = require('./controllers/AdminController')
 const transactionRoutes = require('./controllers/TransactionController')
-const baceRoutes = require('./controllers/BaceController')
+const storeRoutes = require('./controllers/StoreController')
 const userRoutes = require('./controllers/UserController')
 const cors = require('cors')
 
@@ -14,7 +14,7 @@ app.use(cors(
   }
 ))
 
-const BaceBook = require('./models/BaceSchema')
+const StoreBook = require('./models/StoreSchema')
 require('dotenv').config()
 
 
@@ -22,7 +22,7 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
   console.log('Connected to MongoDB')
 })
 .then(async()=>{
-  await BaceBook.syncIndexes()
+  await StoreBook.syncIndexes()
   console.log('Indexes synchronized')
 })
 .catch((err) => {
@@ -41,5 +41,5 @@ app.listen(port, () => {
 app.use(express.json())
 app.use('/admin', adminRoutes)
 app.use('/transactions', transactionRoutes)
-app.use('/bace', baceRoutes)
+app.use('/store', storeRoutes)
 app.use('/user', userRoutes)

@@ -2,29 +2,30 @@ const express = require('express');
 const router = express.Router();
 const AdminBook = require('../models/AdminSchema');
 const Transaction = require('../models/TransactionSchema');
-const BaceBook = require('../models/BaceSchema');
+const StoreBook = require('../models/StoreSchema');
 const { verifyToken,authorize } = require('../middleware/authMiddleware');
 
 
 router.post('/update-books',verifyToken, authorize(['admin']) ,async (req, res) => {
     try {
-        const { small_books, big_books, mahabig_books } = req.body;
+        const { small_books, big_books, medium_books } = req.body;
 
-        // Calculate total books
-        const total_books = small_books + big_books + mahabig_books;
 
         // Create a new AdminBook document
-        const adminBook = new AdminBook({
-            small_books,
-            big_books,
-            mahabig_books,
-            total_books
-        });
+        const adminBook = (await AdminBook.find().sort({ createdAt: -1 }))[0];
 
-        // Save the document to the database
+
+        if(adminBook){
+            adminBook.small_books += small_books;
+            adminBook.big_books += big_books;
+            adminBook.medium_books += medium_books;
+        }else{
+            adminBook = new AdminBook({ small_books, big_books, medium_books });
+        }
+
         await adminBook.save();
 
-        res.status(200).json({ message: 'Books updated successfully', adminBook });
+        res.status(200).json({ message: 'Books updated successfully', adminBook, success: true });
     } catch (error) {
         console.error('Error updating books:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -46,28 +47,28 @@ router.get('/get-details',async (req, res) => {
 
 router.post('/transfer',verifyToken, authorize(['admin']) ,async (req, res) => {
     try {
-        const {name, small_books, big_books, mahabig_books, amount, desc } = req.body;
+        const {name, small_books, big_books, medium_books, amount, desc } = req.body;
 
 
         const small = Number(small_books);
         const big = Number(big_books);
-        const mahabig = Number(mahabig_books);
+        const medium = Number(medium_books);
 
         // Calculate total books
-        const total_books = small + big + mahabig;
+        const total_books = small + big + medium;
 
-        const bace = await BaceBook.findOne({name});
+        const store = await StoreBook.findOne({name});
 
-        if(!bace){
-            return res.status(404).json({ message: 'Bace record not found' });
+        if(!store){
+            return res.status(404).json({ message: 'Store record not found' });
         }
 
-        bace.small_books += small;
-        bace.big_books += big;
-        bace.mahabig_books += mahabig;
-        bace.total_books += total_books;
+        store.small_books += small;
+        store.big_books += big;
+        store.medium_books += medium;
+        store.total_books += total_books;
 
-        await bace.save();
+        await store.save();
 
         await AdminBook.findOneAndUpdate(
   {},
@@ -75,7 +76,7 @@ router.post('/transfer',verifyToken, authorize(['admin']) ,async (req, res) => {
     $inc: {
       small_books: -small,
       big_books: -big,
-      mahabig_books: -mahabig,
+      medium_books: -medium,
       total_books : -total_books
     }
   },
@@ -84,10 +85,10 @@ router.post('/transfer',verifyToken, authorize(['admin']) ,async (req, res) => {
 
         // Create a new AdminBook document
        const transaction = new Transaction({
-            bace: name,
+            store: name,
             small_books,
             big_books,
-            mahabig_books,
+            medium_books,
             total_books,
             desc,
             amount: {
@@ -96,7 +97,7 @@ router.post('/transfer',verifyToken, authorize(['admin']) ,async (req, res) => {
             }
        })
 
-        // Save the document to the database
+        
         await transaction.save();
 
         res.status(200).json({ message: 'Books transferred successfully', transaction, success: true });

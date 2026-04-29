@@ -10,12 +10,17 @@ const AdminSchema = new Schema({
   big_books:{
     type: Number,
   },
-  mahabig_books:{
+  medium_books:{
     type: Number,
   },
-  total_books:{
-    type: Number,
-  }
+  
+},{
+  toJSON :{virtuals: true},
+  toObject : {virtuals: true}
+})
+
+AdminSchema.virtual('total_books').get(function() {
+    return this.small_books + this.medium_books + this.big_books;
 })
 
 module.exports = mongoose.model('AdminBook', AdminSchema)

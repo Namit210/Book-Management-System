@@ -3,7 +3,7 @@ const router = express.Router();
 const Transaction = require('../models/TransactionSchema'); 
 const { verifyToken, authorize } = require('../middleware/authMiddleware');
 
-router.get('/all',verifyToken, authorize(['admin','bace'])  ,async (req, res) => {
+router.get('/all',verifyToken, authorize(['admin','store'])  ,async (req, res) => {
     try {
         if(req.user.role === 'admin'){
         const transactions = await Transaction.find({}).sort({ timestamp: -1 });
